@@ -21,10 +21,10 @@ import re
 
 EXPR_SUBST_RE = re.compile(r"(\$\{[.\w]+\})")
 
-IF_RE = re.compile(r"#if *\((\w+)\)")
+IF_RE = re.compile(r"#if *\(([.\w]+)\)")
 END_IF = "#endif"
 
-FOR_RE = re.compile(r"#for *\((\w+) +in +(\w+)\)")
+FOR_RE = re.compile(r"#for *\((\w+) +in +([.\w]+)\)")
 END_FOR = "#endfor"
 
 def eval_expr(expr, context):
