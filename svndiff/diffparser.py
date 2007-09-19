@@ -3,6 +3,7 @@
 """
 
 import re
+from cgi import escape as escape_html
 
 TYPE_UNMODIFIED="unmod"
 TYPE_ADDED="add"
@@ -13,8 +14,15 @@ TYPE_MOVED="mv"
 
 class Change:
     def __init__(self, line, type = TYPE_UNMODIFIED):
-        self.line = line
+        self.line = escape_html(line)
         self.type = type
+        
+    def __repr__(self):
+        return "%s: %s" % (self.type, self.line)
+    
+    def __str__(self):
+        return self.__repr__()
+    
 
 class File:
     def __init__(self, type, path, url, changes = []):
@@ -117,7 +125,7 @@ def get_files(diff, base_url):
             pass
         else:
             # changes
-            c = Change(line)
+            c = Change(line[1:])
             if line.startswith("+"):
                 c.type = TYPE_ADDED
             if line.startswith("-"):
