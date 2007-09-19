@@ -59,8 +59,6 @@ def render(template, context):
     """
     Render given template using variables from context dictionary
     
-    TODO: add support for nested for loops
-    
     >>> print render('''line 1
     ... line 2''', {})
     line 1
