@@ -1,0 +1,13 @@
+[SVN-DIFF]
+smtpserver = smtpserver.com
+interval = 10
+subscribers = me@server.com 
+
+[PROJECT1]
+repo = http://svnserver.com/repo/PROJECT1
+# you can override interval and subscribers on per project basis
+interval = 15
+subscribers = dev1@server.com, dev2@server.com
+
+[PROJECT2]
+repo = http://svnserver.com/repo/PROJECT2
