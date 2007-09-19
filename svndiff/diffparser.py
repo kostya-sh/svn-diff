@@ -11,6 +11,7 @@ TYPE_REMOVED="rem"
 TYPE_MODIFIED="mod"
 TYPE_COPIED="cp"
 TYPE_MOVED="mv"
+TYPE_INFO="info"
 
 class Change:
     def __init__(self, line, type = TYPE_UNMODIFIED):
@@ -118,11 +119,11 @@ def get_files(diff, base_url):
             if m is not None:
                 files[-1].rev_to = int(m.group(1))
         elif line.startswith("@@"):
-            # information about changed lines: skip it for now
-            pass
+            # information about changed lines
+            files[-1].changes.append(Change(line, TYPE_INFO))
         elif line.startswith("\\"):
-            # "No newline at end of file": skip this for now
-            pass
+            # "No newline at end of file"
+            files[-1].changes.append(Change(line, TYPE_INFO))
         else:
             # changes
             c = Change(line[1:])
@@ -140,7 +141,7 @@ def get_files(diff, base_url):
 
         # if number of changes with type 'REMOVED' is equal to the 
         # total number of changes the file was removed
-        if len(file.changes) == len(filter(lambda c: c.type == TYPE_REMOVED, file.changes)):
+        if len(filter(lambda c: c.type != TYPE_INFO, file.changes)) == len(filter(lambda c: c.type == TYPE_REMOVED, file.changes)):
             file.type = TYPE_REMOVED
 
     return files
