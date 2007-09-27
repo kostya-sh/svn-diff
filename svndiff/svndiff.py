@@ -27,7 +27,7 @@ from scheduler import Scheduler
 from svn import SubversionHelper
 
 # files and directories
-APP_DIR = os.path.join(os.path.expanduser('~'), 'svn-diff')
+APP_DIR = os.path.join(os.path.expanduser('~'), '.svn-diff')
 CONFIG_FILE = os.path.join(APP_DIR, 'config')
 LAST_REVS_DIR = os.path.join(APP_DIR, 'last-revs')
 # TODO: make template location configurable
