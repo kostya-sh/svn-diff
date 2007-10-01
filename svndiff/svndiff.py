@@ -104,9 +104,9 @@ def check_module(cfg, module, repo, subscribers):
                 
                 try:
                     send_diff(cfg, subscribers, module, rev, log, diff)
-                except Exception, e:
-                    logger.warn("Failed to send diff for module %s, revision %d to %s" %
-                            (module, rev, subscribers), e)
+                except Exception:
+                    logger.exception("Failed to send diff for module %s, revision %d to %s: " %
+                            (module, rev, subscribers))
 
             # write last checked revision to the file
             open(last_rev_file, 'w').write(str(rev))
