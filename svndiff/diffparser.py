@@ -3,6 +3,7 @@
 """
 
 import re
+import logging
 from cgi import escape as escape_html
 
 TYPE_UNMODIFIED="unmod"
@@ -12,6 +13,8 @@ TYPE_MODIFIED="mod"
 TYPE_COPIED="cp"
 TYPE_MOVED="mv"
 TYPE_INFO="info"
+
+LOG = logging.getLogger("diffparser")
 
 class Change:
     def __init__(self, line, type = TYPE_UNMODIFIED):
@@ -124,7 +127,7 @@ def get_files(diff, base_url):
         elif line.startswith("\\"):
             # "No newline at end of file"
             files[-1].changes.append(Change(line, TYPE_INFO))
-        else:
+        elif len(files) != 0:
             # changes
             c = Change(line[1:])
             if line.startswith("+"):
@@ -132,6 +135,21 @@ def get_files(diff, base_url):
             if line.startswith("-"):
                 c.type = TYPE_REMOVED
             files[-1].changes.append(c)
+        else:
+            # TODO: handle properties changes
+            # Exmaple of svn diff:
+            #
+            #Property changes on: srm-admin-ui
+            #___________________________________________________________________
+            #Name: svn:ignore
+            #   - target
+            #
+            #   + target
+            #.classpath
+            #.project
+            #.settings
+            LOG.warn("Unexpected line: %s" % line)
+            LOG.debug("Diff\n: %s" % diff)
 
     # do some after pricessing
     for file in files:
