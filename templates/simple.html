@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
 <!DOCTYPE html
     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -5,7 +7,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
     <title></title>
-    <style>
+    <style type="text/css">
+        .nowrap { white-space: nowrap; }
+    
         /* changeset */
         h1 {
           font-size: 18pt;
@@ -101,19 +105,19 @@
         /* diff */
         pre.diff {
           font-size: 8pt;
-          font-family: courier new;
+          font-family: "Courier New";
           padding: 3px;
           border: 1px solid black;
         }
 
         pre.diff .add {
-          background-color: #bfb;
+          color: #008800;
         }
         pre.diff .rem {
-          background-color: #f88;
+          color: #cc0000;
         }
         pre.diff .info {
-          background-color: #FFFF99;
+          color: #777;
         }
 
         #footer p {
@@ -141,11 +145,9 @@
         <dd class="files">
             <ul id="chglist">
                 #for(file in files)
-                <li>
-                    <nobr>
+                <li class="nowrap">
                     <div class="${file.type}"></div>
                     <a title="Show file" href="#file${file_index}">${file.path}</a>
-                    </nobr> 
                 </li>
                 #endfor
             </ul>
