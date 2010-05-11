@@ -40,6 +40,7 @@ OPT_SUBSCRIBERS = "subscribers"
 OPT_REPO = "repo"
 OPT_SMTPSERVER = "smtpserver"
 OPT_FROM = "from"
+OPT_FROM_DOMAIN = "from_domain"
 
 def send_diff(cfg, subscribers, module, revision, log, diff):
     logger = logging.getLogger(module)
@@ -57,8 +58,8 @@ def send_diff(cfg, subscribers, module, revision, log, diff):
     msg_str = template.render(open(TEMPLATE_FILE, 'r').read(), context)
     
     # create email message
-    #from_addr = cfg.get(MAIN_CONFIG_SECTION, OPT_FROM)
-    from_addr = "%s@lehman.com" % log[0]
+    from_domain = cfg.get(MAIN_CONFIG_SECTION, OPT_FROM_DOMAIN)
+    from_addr = "%s@%s" % (log[0], from_domain)
     msg = MIMEText(msg_str, "html")
     msg['Subject'] = "[svn-diff for %s, r%d] %s" % (module, revision, log[2])
     msg['From'] = from_addr 
@@ -66,7 +67,7 @@ def send_diff(cfg, subscribers, module, revision, log, diff):
     
     # connect to SMTP server and send message
     smtp_server = cfg.get(MAIN_CONFIG_SECTION, OPT_SMTPSERVER)
-    logger.debug("Sending mail to %s through %s" % (subscribers, smtp_server))
+    logger.debug("Sending mail to %s through %s from %s" , subscribers, smtp_server, from_addr)
     s = smtplib.SMTP(smtp_server)
     #s.connect()
     s.sendmail(from_addr, subscribers.split(','), msg.as_string(False))
@@ -107,10 +108,11 @@ def check_module(cfg, module, repo, subscribers):
                 except Exception:
                     logger.exception("Failed to send diff for module %s, revision %d to %s: " %
                             (module, rev, subscribers))
+                    return
 
             # write last checked revision to the file
             open(last_rev_file, 'w').write(str(rev))
-    
+   
     if last_checked_rev < 0:
         if not os.path.exists(LAST_REVS_DIR):
             os.makedirs(LAST_REVS_DIR)

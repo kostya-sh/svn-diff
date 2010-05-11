@@ -1,7 +1,8 @@
 [SVN-DIFF]
 smtpserver = smtpserver.com
 interval = 10
-subscribers = me@server.com 
+subscribers = me@server.com
+from_domain = mydomain.com
 
 [PROJECT1]
 repo = http://svnserver.com/repo/PROJECT1
