@@ -41,6 +41,7 @@ OPT_REPO = "repo"
 OPT_SMTPSERVER = "smtpserver"
 OPT_FROM = "from"
 OPT_FROM_DOMAIN = "from_domain"
+OPT_MAX_DIFFSIZE = "max_diff_size"
 
 def send_diff(cfg, subscribers, module, revision, log, diff):
     logger = logging.getLogger(module)
@@ -74,6 +75,8 @@ def send_diff(cfg, subscribers, module, revision, log, diff):
     s.close()
     
 def check_module(cfg, module, repo, subscribers):
+    max_diff_size = cfg.getint(MAIN_CONFIG_SECTION, OPT_MAX_DIFFSIZE)
+
     logger = logging.getLogger(module)
     
     logger.info("Checking %s" % module)
@@ -96,13 +99,17 @@ def check_module(cfg, module, repo, subscribers):
         for rev in range(last_checked_rev + 1, latest_rev + 1):
             logger.debug("Checking log for revision %d" % rev)
             log = sh.get_log(rev)
-            
+
             # if there are some changes send diff
             if log is not None:
                 changed = True
                 logger.info("Sending log for revision %d" % rev)
                 diff = sh.get_last_diff(rev)
-                
+
+                if max_diff_size is not None and len(diff) > max_diff_size:
+                    logger.info("Diff size %d is more than configured max diff size %d.", len(diff), max_diff_size)
+                    diff = diff[:max_diff_size]
+
                 try:
                     send_diff(cfg, subscribers, module, rev, log, diff)
                 except Exception:

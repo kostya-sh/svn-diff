@@ -3,6 +3,7 @@ smtpserver = smtpserver.com
 interval = 10
 subscribers = me@server.com
 from_domain = mydomain.com
+max_diff_size = 1000000
 
 [PROJECT1]
 repo = http://svnserver.com/repo/PROJECT1
