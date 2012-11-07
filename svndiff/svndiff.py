@@ -14,6 +14,7 @@
 """
 
 import sys
+import os
 import os.path
 import logging
 import smtplib
@@ -42,10 +43,43 @@ OPT_SMTPSERVER = "smtpserver"
 OPT_FROM = "from"
 OPT_FROM_DOMAIN = "from_domain"
 OPT_MAX_DIFFSIZE = "max_diff_size"
+OPT_DIFF_DIR = "diff_dir"
 
-def send_diff(cfg, subscribers, module, revision, log, diff):
+def send_diff(cfg, module, revision, log, diff):
+    if cfg.has_option(module, OPT_DIFF_DIR):
+        send_diff_to_file(cfg, module, revision, log, diff)
+    else:
+        send_diff_by_email(cfg, module, revision, log, diff)
+
+def send_diff_to_file(cfg, module, revision, log, diff):
     logger = logging.getLogger(module)
-    
+
+    diff_dir = cfg.get(module, OPT_DIFF_DIR)
+    if not os.path.exists(diff_dir):
+        os.makedirs(diff_dir)
+
+    diff_file = os.path.join(diff_dir, "%s-%d.diff" % (module, revision))
+    logger.info("Writing diff for %d to %s", revision, diff_file)
+    f = open(diff_file, 'w')
+    # make commit message look a bit like a diff
+    f.write("Index: commit message\n")
+    f.write("===================================================================\n")
+    f.write("--- commit message\n")
+    f.write("+++ commit message\n")
+    f.write("@@ -0,0 +0,0 @@\n\n")
+    f.write("Author    : %s\n" % log[0])
+    f.write("Timestamp : %s\n" % log[1])
+    f.write("Message   : %s\n\n" % log[2])
+    f.write(diff)
+    f.close()
+
+def send_diff_by_email(cfg, module, revision, log, diff):
+    logger = logging.getLogger(module)
+
+    subscribers = cfg.get(MAIN_CONFIG_SECTION, OPT_SUBSCRIBERS)
+    if cfg.has_option(module, OPT_SUBSCRIBERS):
+        subscribers = cfg.get(module, OPT_SUBSCRIBERS)
+
     # create message
     context = {
         "revision": revision,
@@ -68,13 +102,13 @@ def send_diff(cfg, subscribers, module, revision, log, diff):
     
     # connect to SMTP server and send message
     smtp_server = cfg.get(MAIN_CONFIG_SECTION, OPT_SMTPSERVER)
-    logger.debug("Sending mail to %s through %s from %s" , subscribers, smtp_server, from_addr)
+    logger.info("Sending mail to %s through %s from %s" , subscribers, smtp_server, from_addr)
     s = smtplib.SMTP(smtp_server)
     #s.connect()
     s.sendmail(from_addr, subscribers.split(','), msg.as_string(False))
     s.close()
     
-def check_module(cfg, module, repo, subscribers):
+def check_module(cfg, module, repo):
     max_diff_size = cfg.getint(MAIN_CONFIG_SECTION, OPT_MAX_DIFFSIZE)
 
     logger = logging.getLogger(module)
@@ -103,7 +137,7 @@ def check_module(cfg, module, repo, subscribers):
             # if there are some changes send diff
             if log is not None:
                 changed = True
-                logger.info("Sending log for revision %d" % rev)
+                logger.info("Getting log for revision %d" % rev)
                 diff = sh.get_last_diff(rev)
 
                 if max_diff_size is not None and len(diff) > max_diff_size:
@@ -111,10 +145,9 @@ def check_module(cfg, module, repo, subscribers):
                     diff = diff[:max_diff_size]
 
                 try:
-                    send_diff(cfg, subscribers, module, rev, log, diff)
+                    send_diff(cfg, module, rev, log, diff)
                 except Exception:
-                    logger.exception("Failed to send diff for module %s, revision %d to %s: " %
-                            (module, rev, subscribers))
+                    logger.exception("Failed to send diff for module %s, revision %d: " % (module, rev))
                     return
 
             # write last checked revision to the file
@@ -142,10 +175,7 @@ if __name__ == "__main__":
     logging.info("Parsed config file")
     
     default_interval = cfg.getint(MAIN_CONFIG_SECTION, OPT_INTERVAL)
-    default_subscribers = cfg.get(MAIN_CONFIG_SECTION, OPT_SUBSCRIBERS)
-    
-    logging.info("Default interval: %d, default subscribers: %s" % 
-            (default_interval, default_subscribers))
+    logging.info("Default interval: %d" % default_interval)
     
     for section in cfg.sections():
         if MAIN_CONFIG_SECTION != section:
@@ -153,16 +183,11 @@ if __name__ == "__main__":
             if cfg.has_option(section, OPT_INTERVAL):
                 interval = cfg.getint(section, OPT_INTERVAL)
                 
-            subscribers = default_subscribers
-            if cfg.has_option(section, OPT_SUBSCRIBERS):
-                subscribers = cfg.get(section, OPT_SUBSCRIBERS)
-                
             repo = cfg.get(section, OPT_REPO)
 
             logging.info(("Starting check thread for module %s (%s)," +
-                         "checking for changes every %d minutes," +
-                         "subscribers: %s") % (section, repo, interval, subscribers))
-            s = Scheduler(interval * 60, check_module, args = (cfg, section, repo, subscribers))
+                          "checking for changes every %d minutes") % (section, repo, interval))
+            s = Scheduler(interval * 60, check_module, args = (cfg, section, repo))
             s.start()
     
 #    sh = SubversionHelper("http://svng/SVG/repos/PSFO-FINESSE/fcm")
