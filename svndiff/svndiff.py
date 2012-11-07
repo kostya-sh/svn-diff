@@ -9,8 +9,9 @@
     [module1]
     repo = url to SVN repo
     interval = interval to check for diffs in minutes (optional, overrides default)
-    subscribers = comma separated list of recipients (optional, overrides default)    
-      
+    subscribers = comma separated list of recipients (optional, overrides default)
+    diff_dir = directory to store diff files instead of sending emails (optional)
+
 """
 
 import sys

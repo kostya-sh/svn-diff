@@ -13,3 +13,4 @@ subscribers = dev1@server.com, dev2@server.com
 
 [PROJECT2]
 repo = http://svnserver.com/repo/PROJECT2
+diff_dir = /tmp/project2/svn-diff
