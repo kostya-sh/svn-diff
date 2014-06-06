@@ -14,3 +14,5 @@ subscribers = dev1@server.com, dev2@server.com
 [PROJECT2]
 repo = http://svnserver.com/repo/PROJECT2
 diff_dir = /tmp/project2/svn-diff
+# if ture then a directory per commit date will be created to store diff files
+group_by_date = true

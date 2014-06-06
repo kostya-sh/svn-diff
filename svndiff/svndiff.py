@@ -45,6 +45,7 @@ OPT_FROM = "from"
 OPT_FROM_DOMAIN = "from_domain"
 OPT_MAX_DIFFSIZE = "max_diff_size"
 OPT_DIFF_DIR = "diff_dir"
+OPT_GROUP_BY_DATE = "group_by_date"
 
 def send_diff(cfg, module, revision, log, diff):
     if cfg.has_option(module, OPT_DIFF_DIR):
@@ -56,6 +57,9 @@ def send_diff_to_file(cfg, module, revision, log, diff):
     logger = logging.getLogger(module)
 
     diff_dir = cfg.get(module, OPT_DIFF_DIR)
+    if cfg.has_option(module, OPT_GROUP_BY_DATE) and cfg.getboolean(module, OPT_GROUP_BY_DATE):
+        diff_date = log[1].split(" ")[0]
+        diff_dir = os.path.join(diff_dir, diff_date)
     if not os.path.exists(diff_dir):
         os.makedirs(diff_dir)
 
