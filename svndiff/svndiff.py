@@ -46,6 +46,7 @@ OPT_FROM_DOMAIN = "from_domain"
 OPT_MAX_DIFFSIZE = "max_diff_size"
 OPT_DIFF_DIR = "diff_dir"
 OPT_GROUP_BY_DATE = "group_by_date"
+OPT_AUTHOR_NAME = "author_name"
 
 def send_diff(cfg, module, revision, log, diff):
     if cfg.has_option(module, OPT_DIFF_DIR):
@@ -58,8 +59,7 @@ def send_diff_to_file(cfg, module, revision, log, diff):
 
     diff_dir = cfg.get(module, OPT_DIFF_DIR)
     if cfg.has_option(module, OPT_GROUP_BY_DATE) and cfg.getboolean(module, OPT_GROUP_BY_DATE):
-        diff_date = log[1].split(" ")[0]
-        diff_dir = os.path.join(diff_dir, diff_date)
+        diff_dir = os.path.join(diff_dir, log.date())
     if not os.path.exists(diff_dir):
         os.makedirs(diff_dir)
 
@@ -72,9 +72,9 @@ def send_diff_to_file(cfg, module, revision, log, diff):
     f.write("--- commit message\n")
     f.write("+++ commit message\n")
     f.write("@@ -0,0 +0,0 @@\n\n")
-    f.write("Author    : %s\n" % log[0])
-    f.write("Timestamp : %s\n" % log[1])
-    f.write("Message   : %s\n\n" % log[2])
+    f.write("Author    : %s\n" % log.author_name)
+    f.write("Timestamp : %s\n" % log.timestamp)
+    f.write("Message   : %s\n\n" % log.message)
     f.write(diff)
     f.close()
 
@@ -88,9 +88,9 @@ def send_diff_by_email(cfg, module, revision, log, diff):
     # create message
     context = {
         "revision": revision,
-        "author": log[0],
-        "timestamp": log[1],
-        "message": escape_html(log[2]),
+        "author": log.author_name,
+        "timestamp": log.timestamp,
+        "message": escape_html(log.message),
         "diff": escape_html(diff),
         "files": diffparser.get_files(diff, cfg.get(module, OPT_REPO))
     }
@@ -99,9 +99,9 @@ def send_diff_by_email(cfg, module, revision, log, diff):
     
     # create email message
     from_domain = cfg.get(MAIN_CONFIG_SECTION, OPT_FROM_DOMAIN)
-    from_addr = "%s@%s" % (log[0], from_domain)
+    from_addr = "%s@%s" % (log.author, from_domain)
     msg = MIMEText(msg_str, "html")
-    msg['Subject'] = "[svn-diff for %s, r%d] %s" % (module, revision, log[2])
+    msg['Subject'] = "[svn-diff for %s, r%d] %s" % (module, revision, log.message)
     msg['From'] = from_addr 
     msg['To'] = subscribers
     
@@ -148,6 +148,11 @@ def check_module(cfg, module, repo):
                 if max_diff_size is not None and len(diff) > max_diff_size:
                     logger.info("Diff size %d is more than configured max diff size %d.", len(diff), max_diff_size)
                     diff = diff[:max_diff_size]
+
+                # author mapping
+                opt_author_name = OPT_AUTHOR_NAME + "." + log.author
+                if cfg.has_option(module, opt_author_name):
+                    log.author_name = cfg.get(module, opt_author_name)
 
                 try:
                     send_diff(cfg, module, rev, log, diff)

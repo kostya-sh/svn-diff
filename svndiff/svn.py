@@ -22,6 +22,16 @@ class SubversionException(exceptions.Exception):
     def __str__(self):
         return self.__repr__()
 
+class Log:
+    def __init__(self, author, timestamp, message):
+        self.author = author
+        self.author_name = author
+        self.timestamp = timestamp
+        self.message = message
+
+    def date(self):
+        return self.timestamp.split(" ")[0]
+
 class SubversionHelper:
     REVISION_RE = re.compile("Revision: (\d+)")
     LOG_INFO_RE = re.compile(r"r(\d+) \| (\w+) \| (.*) \|")
@@ -44,28 +54,25 @@ class SubversionHelper:
         
     def get_log(self, revision):
         """
-        Returns log for given revision as tuple:
-        
-          (author, date, message)
-          
-        If there is no log for given revision return None
+        Returns log for the given revision as Log object.
+        If there is no log for the given revision returns None
         """
         command = 'svn log -r %d "%s"' % (revision, self.repo)
         
-        author = date = None
-        message= "" 
+        author = timestamp = None
+        message = ""
 
         with os.popen(command) as out:
             for line in out:
                 m = self.LOG_INFO_RE.match(line)
                 if author is not None and not line.startswith(10 * "-") and not len(line.strip()) == 0:
-                    message += line                    
+                    message += line
                 if m is not None:
                     author = m.group(2)
-                    date = m.group(3)
+                    timestamp = m.group(3)
         
         if author is not None:
-            return (author, date, message.strip())
+            return Log(author, timestamp, message.strip())
         return None
     
     def get_last_diff(self, revision):
