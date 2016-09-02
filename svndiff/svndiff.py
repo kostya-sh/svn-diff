@@ -37,6 +37,7 @@ TEMPLATE_FILE = os.path.join(os.path.dirname(__file__), "../templates/simple.htm
 
 # configuration names
 MAIN_CONFIG_SECTION = "SVN-DIFF"
+OPT_DEBUG = "debug"
 OPT_INTERVAL = "interval"
 OPT_SUBSCRIBERS = "subscribers"
 OPT_REPO = "repo"
@@ -47,6 +48,10 @@ OPT_MAX_DIFFSIZE = "max_diff_size"
 OPT_DIFF_DIR = "diff_dir"
 OPT_GROUP_BY_DATE = "group_by_date"
 OPT_AUTHOR_NAME = "author_name"
+
+DEFAULT_CONFIG = {
+    OPT_DEBUG: "false"
+}
 
 def send_diff(cfg, module, revision, log, diff):
     if cfg.has_option(module, OPT_DIFF_DIR):
@@ -173,17 +178,20 @@ def check_module(cfg, module, repo):
         
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(name)s %(levelname)s %(message)s')
-    
     if not os.path.isfile(CONFIG_FILE):
         print >> sys.stderr, "No config file found, please create " + CONFIG_FILE
         sys.exit(23)
-    
-    cfg = ConfigParser()
+
+    cfg = ConfigParser(DEFAULT_CONFIG)
     cfg.read([CONFIG_FILE])
+
+    level = logging.INFO
+    if cfg.getboolean(MAIN_CONFIG_SECTION, OPT_DEBUG):
+        level=logging.DEBUG
+    logging.basicConfig(level=level, format='%(asctime)s %(name)s %(levelname)s %(message)s')
+
     logging.info("Parsed config file")
-    
+
     default_interval = cfg.getint(MAIN_CONFIG_SECTION, OPT_INTERVAL)
     logging.info("Default interval: %d" % default_interval)
     

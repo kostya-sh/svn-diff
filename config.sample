@@ -1,4 +1,7 @@
 [SVN-DIFF]
+# turn debug logging on/off
+debug = true
+
 # poll interval (in minutes)
 # if 0 or negative the script will run once and exit
 interval = 10
