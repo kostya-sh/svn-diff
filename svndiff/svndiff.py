@@ -50,7 +50,9 @@ OPT_GROUP_BY_DATE = "group_by_date"
 OPT_AUTHOR_NAME = "author_name"
 
 DEFAULT_CONFIG = {
-    OPT_DEBUG: "false"
+    OPT_DEBUG: "false",
+    OPT_INTERVAL: "0", # run once by default
+    OPT_MAX_DIFFSIZE: "100000" # 100 KiB
 }
 
 def send_diff(cfg, module, revision, log, diff):
@@ -150,7 +152,7 @@ def check_module(cfg, module, repo):
                 logger.info("Getting log for revision %d" % rev)
                 diff = sh.get_last_diff(rev)
 
-                if max_diff_size is not None and len(diff) > max_diff_size:
+                if max_diff_size > 0 and len(diff) > max_diff_size:
                     logger.info("Diff size %d is more than configured max diff size %d.", len(diff), max_diff_size)
                     diff = diff[:max_diff_size]
 
@@ -207,9 +209,3 @@ if __name__ == "__main__":
                           "checking for changes every %d minutes") % (section, repo, interval))
             s = Scheduler(interval * 60, check_module, args = (cfg, section, repo))
             s.start()
-    
-#    sh = SubversionHelper("http://svng/SVG/repos/PSFO-FINESSE/fcm")
-#    print sh.get_revision()
-#    print sh.get_last_diff(2997)
-#    for r in range(2997, 2990, -1):
-#        print sh.get_log(r)

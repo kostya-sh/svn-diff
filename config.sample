@@ -13,6 +13,7 @@ subscribers = me@server.com
 from_domain = mydomain.com
 
 # maximum size (in bytes) of diff output that should be emailed
+# 0 or negative value means no maximum
 max_diff_size = 1000000
 
 [PROJECT1]
