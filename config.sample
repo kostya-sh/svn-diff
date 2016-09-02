@@ -1,19 +1,32 @@
 [SVN-DIFF]
-smtpserver = smtpserver.com
+# poll interval (in minutes)
+# if 0 or negative the script will run once and exit
 interval = 10
+
+smtpserver = smtpserver.com
+
 subscribers = me@server.com
+
 from_domain = mydomain.com
+
+# maximum size (in bytes) of diff output that should be emailed
 max_diff_size = 1000000
 
 [PROJECT1]
+# SVN URL
 repo = http://svnserver.com/repo/PROJECT1
-# you can override interval and subscribers on per project basis
+
+# interval and subscribers can be overwritten on per project basis
 interval = 15
 subscribers = dev1@server.com, dev2@server.com
 
 [PROJECT2]
 repo = http://svnserver.com/repo/PROJECT2
+
+# directory to save diff files instead of emailing them
+# must be defined per project (but cab be the same for multiple projects)
 diff_dir = /tmp/project2/svn-diff
+
 # if ture then a directory per commit date will be created to store diff files
 group_by_date = true
 # readable names

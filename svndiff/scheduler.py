@@ -28,9 +28,10 @@ class Scheduler(Thread):
         self.finished.set()
 
     def run(self):
-        while True:        
-            if not self.finished.isSet():
-                self.function(*self.args, **self.kwargs)
-            else:
+        while True:
+            if self.finished.isSet():
+                break
+            self.function(*self.args, **self.kwargs)
+            if self.interval <= 0:
                 break
             self.finished.wait(self.interval)
